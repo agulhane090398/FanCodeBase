@@ -1,5 +1,9 @@
 package com.fancode;
 
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -14,22 +18,44 @@ public class Main {
     private static final String TODOS_URL = "http://jsonplaceholder.typicode.com/todos?userId=";
 
     public static void main(String[] args) throws Exception {
-        List<User> users = fetchUsers();
-        for (User user : users) {
-            System.out.println("User id: " + user.getId());
-            System.out.println("User name: " + user.getName());
-            if (Utils.isFanCodeUser(user)) {
-                List<Todo> todos = fetchTodos(user.getId());
-                double completedPercentage = Utils.calculateCompletionPercentage(todos);
+        // Initialize ExtentSparkReporter (replaces ExtentHtmlReporter)
+        ExtentSparkReporter sparkReporter = new ExtentSparkReporter("FanCodeTestReport.html");
+        sparkReporter.config().setDocumentTitle("FanCode Test Report");
+        sparkReporter.config().setReportName("FanCode Automation Report");
 
-                if (completedPercentage > 50) {
-                    System.out.println("User " + user.getName() + " from FanCode has " + completedPercentage + "% completed tasks.");
+        // Initialize ExtentReports and attach the SparkReporter
+        ExtentReports extent = new ExtentReports();
+        extent.attachReporter(sparkReporter);
+
+        ExtentTest test = extent.createTest("FanCode User Todo Task Completion Test");
+
+        try {
+            List<User> users = fetchUsers();
+            test.log(Status.INFO, "Fetched users from API.");
+
+            for (User user : users) {
+                System.out.println("User id: " + user.getId());
+                System.out.println("User name: " + user.getName());
+                if (Utils.isFanCodeUser(user)) {
+                    List<Todo> todos = fetchTodos(user.getId());
+                    double completedPercentage = Utils.calculateCompletionPercentage(todos);
+
+                    if (completedPercentage > 50) {
+                        test.log(Status.PASS, "User " + user.getName() + " from FanCode has " + completedPercentage + "% completed tasks.");
+                    } else {
+                        test.log(Status.FAIL, "User " + user.getName() + " failed the task completion criteria.");
+                    }
                 } else {
-                    System.out.println("User " + user.getName() + " failed the task completion criteria.");
+                    test.log(Status.FAIL,"User " + user.getName() + " failed the fancode  user criteria.");
                 }
-            } else {
-                System.out.println("User " + user.getName() + " failed the fancode  user criteria.");
             }
+
+            test.log(Status.INFO, "Test completed.");
+        } catch (Exception e) {
+            test.log(Status.FAIL, "An error occurred: " + e.getMessage());
+        } finally {
+            // Finalize and save the report
+            extent.flush();
         }
     }
 
