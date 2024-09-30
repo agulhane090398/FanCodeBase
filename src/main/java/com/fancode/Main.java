@@ -59,18 +59,36 @@ public class Main {
         }
     }
 
+    /**
+     * Method will fetch all users from user API
+     * @return
+     * @throws Exception
+     */
+
     public static List<User> fetchUsers() throws Exception {
         String response = sendGetRequest(USERS_URL);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, new TypeReference<List<User>>() {});
     }
 
+    /**
+     * Method will fetch TODO response for specific user
+     * @param userId
+     * @return
+     * @throws Exception
+     */
     public static List<Todo> fetchTodos(int userId) throws Exception {
         String response = sendGetRequest(TODOS_URL + userId);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(response, new TypeReference<List<Todo>>() {});
     }
 
+    /**
+     * Method will builc connection and create GET request
+     * @param urlString
+     * @return
+     * @throws Exception
+     */
     private static String sendGetRequest(String urlString) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

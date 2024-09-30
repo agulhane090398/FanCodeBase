@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Todo {
+
+    private int userId;
+    private boolean completed;
+    // Getters and setters
     public void setUserId(int userId) {
         this.userId = userId;
     }
@@ -16,10 +20,6 @@ public class Todo {
         return userId;
     }
 
-    private int userId;
-    private boolean completed;
-
-    // Getters and setters
     public boolean isCompleted() {
         return completed;
     }
